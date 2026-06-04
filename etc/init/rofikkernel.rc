@@ -1,0 +1,20 @@
+# =========================================================
+# Early Boot Logger
+# Created by: RofikKernelDev
+# Target: Android 16 GSI Debugging
+# Logs saved to /metadata/rofik_logs
+# =========================================================
+
+on post-fs
+    mkdir /metadata/rofik_logs 0777 root root
+    chmod 0777 /metadata/rofik_logs
+
+service rofik_bootlog /system/bin/sh /vendor/bin/rofik_bootlog.sh
+    class core
+    user root
+    group root log system
+    oneshot
+    seclabel u:r:init:s0
+
+on property:sys.boot_completed=1
+    exec_background root root -- /system/bin/sh -c "logcat -b all -d > /metadata/rofik_logs/logcat_boot_complete.txt"
