@@ -1,23 +1,40 @@
 #!/system/bin/sh
 
-LOGDIR=/metadata/rofik_logs
+BASE_DIR=/metadata/rofiklog
+STATUS_FILE=$BASE_DIR/last_status
 
-mkdir -p $LOGDIR
+mkdir -p $BASE_DIR
 
-echo "========================================" > $LOGDIR/bootinfo.txt
-echo "RofikKernelDev Early Boot Logger" >> $LOGDIR/bootinfo.txt
-echo "========================================" >> $LOGDIR/bootinfo.txt
+# Toggle log slot
+if [ ! -f "$STATUS_FILE" ]; then
+    CURRENT_SLOT=0
+elif [ "$(cat "$STATUS_FILE" 2>/dev/null)" = "1" ]; then
+    CURRENT_SLOT=0
+else
+    CURRENT_SLOT=1
+fi
 
-date >> $LOGDIR/bootinfo.txt
+LOGDIR=$BASE_DIR/log$CURRENT_SLOT
 
-getprop > $LOGDIR/getprop.txt
+rm -rf "$LOGDIR"
+mkdir -p "$LOGDIR"
 
-dmesg > $LOGDIR/dmesg.txt
+echo "$CURRENT_SLOT" > "$STATUS_FILE"
 
-logcat -b all -d > $LOGDIR/logcat.txt
+echo "========================================" > "$LOGDIR/bootinfo.txt"
+echo "RofikKernelDev Early Boot Logger" >> "$LOGDIR/bootinfo.txt"
+echo "========================================" >> "$LOGDIR/bootinfo.txt"
 
-cat /proc/last_kmsg > $LOGDIR/last_kmsg.txt 2>/dev/null
+date >> "$LOGDIR/bootinfo.txt"
 
-cat /sys/fs/pstore/* > $LOGDIR/pstore.txt 2>/dev/null
+getprop > "$LOGDIR/getprop.txt"
 
-echo "done" > $LOGDIR/status.txt
+dmesg > "$LOGDIR/dmesg.txt"
+
+logcat -b all -d > "$LOGDIR/logcat.txt"
+
+cat /proc/last_kmsg > "$LOGDIR/last_kmsg.txt" 2>/dev/null
+
+cat /sys/fs/pstore/* > "$LOGDIR/pstore.txt" 2>/dev/null
+
+echo "done" > "$LOGDIR/status.txt"
